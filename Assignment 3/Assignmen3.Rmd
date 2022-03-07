@@ -1,0 +1,129 @@
+---
+pdf_document: default
+author: "Arbuda Sivani"
+date: "3/06/2022"
+output: pdf_document
+title: "Naive Bayes method"
+---
+```{r}
+#Importing Data and installing required packages:
+UniversalBank <- read.csv("~/ML/Assignment/Assignment_2/UniversalBank.csv")
+summary(UniversalBank)
+
+library(caret)
+library(class)
+library(ISLR)
+library(e1071)
+
+UniversalBank$Personal.Loan<-factor(UniversalBank$Personal.Loan)
+UniversalBank$CreditCard <- factor(UniversalBank$CreditCard)
+UniversalBank$Online <- factor(UniversalBank$Online)
+summary(UniversalBank)
+```
+```{r}
+#Question 1: Create a pivot table for the training data with Online as a column variable, 
+#CC as a row variable, and Loan as a secondary row variable.
+
+set.seed(64060)
+Train_Index <- createDataPartition(UniversalBank$Personal.Loan, p=0.6,list = FALSE)
+Train.df <- UniversalBank[Train_Index,]
+Validation.df <- UniversalBank[-Train_Index,]
+
+mytable <- xtabs(~ CreditCard+Online+Personal.Loan, data = Train.df)
+ftable(mytable)
+```
+```{r}
+#Question 2: Consider the task of classifying a customer who owns a bank credit card and is actively 
+#using online banking services. Looking at the pivot table, what is the probability that this customer 
+#will accept the loan offer? 
+#[This is the probability of loan acceptance (Loan = 1) conditional on having a bank credit card 
+#(CC = 1) and being an active user of online banking services (Online = 1)]. 
+
+Probability = (59/(59+479))
+
+print(Probability)
+```
+```{r}
+#Question 3: Create two separate pivot tables for the training data. One will have Loan (rows) 
+#as a function of Online (columns) and the other will have Loan (rows) as a function of CC. 
+
+table(Online=Train.df$Online, Personal.Loan=Train.df$Personal.Loan)
+
+table(CreditCard=Train.df$CreditCard, Personal.Loan=Train.df$Personal.Loan)
+```
+```{r}
+
+#Question 4: Compute [P(A | B) means “the probability ofA given B”]:  
+#i. P(CC = 1 | Loan = 1) 
+#(the proportion of credit card holders among the loan acceptors) 
+#ii. P(Online = 1 | Loan = 1)  
+#iii. P(Loan = 1) (the proportion of loan acceptors)  
+#iv. P(CC = 1 | Loan = 0)  
+#v. P(Online = 1 | Loan = 0) 
+#vi. P(Loan = 0)
+
+#i.P(CC=1 | Loan=1)
+Prob_1 <- (93/(93+195))
+print(Prob_1)
+
+#ii.P(Online=1 | Loan=1)
+Prob_2 <- (179/(179+109))
+print(Prob_2)
+
+#iii.P(Loan)
+table(Personal.Loan = Train.df$Personal.Loan)
+Prob_3 <- (288/(288+2712))
+print(Prob_3)
+
+#iv.P(CC=1 | Loan =0)
+Prob_4 <- (788/(1924+788))
+print(Prob_4)
+
+#v.P(Online=1 | Loan=0)
+Prob_5 <- (1631/(1631+1081))
+print(Prob_5)
+
+#vi.P(Loan=0)
+Prob_6 <- (2712/(2712+288))
+print(Prob_6)
+```
+```{r}
+#Question 5: Use the quantities computed above to compute the naive Bayes probability 
+#P(Loan = 1 | CC = 1, Online = 1).
+
+Prob_7 <- (Prob_1*Prob_2*Prob_3)/((Prob_1*Prob_2*Prob_3)+(Prob_4*Prob_5*Prob_6))
+print(Prob_7)
+
+```
+```{r}
+#Question 6: Compare this value with the one obtained from the pivot table in (B). 
+#Which is a more accurate estimate? 
+
+#The exact method would be needing the exact same independent variable classifications for prediction 
+#and Naive Bayes does not require.
+
+#The values derived from Task2(exact method) and Task5(Naive Bayes method) are 0.1096654 and 0.1087106 
+#respectively.If we observe there is a minute difference between the values from both the methods. 
+#The value derived from exact method is 
+#more accurate because we have taken the values directly from the pivot table
+
+```
+```{r}
+#Question 7: Which of the entries in this table are needed for computing 
+#P(Loan = 1 | CC = 1, Online = 1)? 
+#Run naive Bayes on the data. Examine the model output on training data, and find the entry 
+#that corresponds to P(Loan = 1 | CC = 1, Online = 1). 
+#Compare this to the number you obtained in (E). 
+
+nb.model<-naiveBayes (Personal.Loan~ Online +CreditCard, data=Train.df)
+To_Predict=data.frame(Online= '1', CreditCard= '1')
+predict(nb.model,To_Predict, type = 'raw')
+
+#After the comparison I observed that the outputs of Naive Bayes method and the previous method 
+#(Question 5 and Question 7) is exactly the same i.e.,0.1087106
+
+```
+
+
+
+
