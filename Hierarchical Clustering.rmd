@@ -1,0 +1,90 @@
+---
+pdf_document: default
+author: "Arbuda Sivani"
+date: "4/17/2022"
+output: pdf_document
+title: "Hierarchical Clustering"
+---
+```{r}
+Cereals <- read.csv("~/ML/Assignment/Assignment_5/Cereals.csv")
+View(Cereals)
+```
+```{r}
+#Loading libraries
+library(cluster)
+library(caret)
+library(factoextra)
+library(dendextend)
+```
+```{r}
+#Removing missing values
+Cereals_DF <- data.frame(Cereals[,4:16])
+head(Cereals_DF)
+Cereals_NA <- na.omit(Cereals)
+```
+```{r}
+#Normalising and Scaling the data
+Cereals_norm <- scale(Cereals_NA[,4:16])
+```
+#1.Apply hierarchical clustering to the data using Euclidean distance to the normalizedmeasurements. Use Agnes to compare the clustering from single linkage, complete linkage, average linkage, and Ward. Choose the best method.
+```{r}
+d <- dist(Cereals_norm, method = "euclidean")
+HC <- hclust(d, method = "complete")
+plot(HC)
+round(HC$height, 3)
+plot(HC, cex=0.6, hang = -1)
+
+#Using Agnes to compare the clustering from single linkage, complete linkage, average linkage and Ward.
+hc_single <- agnes(Cereals_norm, method = "single")
+hc_complete <- agnes(Cereals_norm, method = "complete")
+hc_average <- agnes(Cereals_norm, method = "average")
+hc_ward <- agnes(Cereals_norm, method = "ward")
+
+#Comparing the agnes coefficients for Single, complete, average and ward method
+print(hc_single$ac)
+print(hc_complete$ac)
+print(hc_average$ac)
+print(hc_ward$ac)
+```
+#From the above result, we can see that the ward method has the highest agnes coefficient of 0.904. Hence, ward method is taken as the best.
+
+```{r}
+hc_ward <- agnes(d, method = "ward")
+pltree(hc_ward, cex=0.6, hang=-1,main = "Dendrogram of Ward")
+```
+
+#2.How many clusters would you choose?
+```{r}
+HC_1 <- hclust(d, method = "ward.D2")
+plot(HC_1,cex=0.6)
+
+plot(hc_ward)
+
+rect.hclust(hc_ward, k=5, border = 2:10)
+
+Group <- cutree(HC_1, k=5)
+table(Group)
+
+DF <- as.data.frame(cbind(Cereals_norm,Group))
+
+#Visualize the clusters on a scatterplot
+fviz_cluster(list(data=Cereals_norm, cluster = Group))
+```
+#To determine the value of k, the larget difference in height can be used to calculate the value of k. Hence, k= is the optimal number of clusters. 
+
+
+#3.The elementary public schools would like to choose a set of cereals to include in their daily cafeterias. Every day a different cereal is offered, but all cereals should support a healthy diet. For this goal, you are requested to find a cluster of “healthy cereals.”
+```{r}
+
+New_Cereals <- Cereals
+New_Cereals_NA <- na.omit(New_Cereals)
+Clust <- cbind(New_Cereals_NA, Group)
+
+#Finding out the cluster of healthy cereals
+mean(Clust[Clust$Group==1,"rating"])
+mean(Clust[Clust$Group==2,"rating"])
+mean(Clust[Clust$Group==3,"rating"])
+mean(Clust[Clust$Group==4,"rating"])
+mean(Clust[Clust$Group==5,"rating"])
+```
+#After looking at the above results it is clear that Cluster1 has the highest mean(73.84) which implicates that cluster1 is a healthy cluster

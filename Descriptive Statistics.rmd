@@ -1,0 +1,64 @@
+---
+title: "Assignment 1"
+author: "Majeti Arbuda Sivani"
+date: "Jan 30, 2022"
+output:
+  pdf_document:
+    toc: true
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(knitr)
+library(rmarkdown)
+library(dplyr)
+library(tinytex)
+```
+
+# Import data 
+```{r}
+Data <- read.csv("~/R/Dataset/Assignment_1/CD_additional_balanced-1.csv")
+```
+
+# Descriptive Statistics for Quantitative Varibles
+```{r}
+summary(Data$age)
+mean(Data$age)
+```
+
+# Descriptive Statistics for Categorical Variables
+```{r}
+table(Data$marital)
+prop.table(table(Data$marital))
+table(Data$job)
+prop.table(table(Data$job))
+```
+
+# Data Transformation
+```{r}
+# Grouping by level of education to see avg age
+group_by_scores <- Data %>% group_by(marital) %>%
+  summarize(
+    Avg_age = mean(age)
+  )
+group_by_scores
+```
+
+# Plotting one quantitative variable and one scatterplot
+```{r}
+
+library(ggplot2)
+
+# Plotting a histogram for the age variable 
+
+hist(Data$age, main = "Age")
+
+# Scatter plot for variables age and duration 
+
+ggplot(Data,aes(x=Data$age, y=Data$duration)) + geom_point()
+
+```
