@@ -1,1 +1,1 @@
-# 64064_amajeti
+# Machine Learning Projects
